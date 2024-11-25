@@ -15,13 +15,13 @@ function App() {
     <Grid container spacing={5}>
 
       {/* Indicadores */}
-      <Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicador 1'} subtitle={'Unidad 1'} value={'1.23'} /></Grid>
-      <Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicador 2'} subtitle={'Unidad 2'} value={'3.12'} /></Grid>
-      <Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicator 3'} subtitle={'Unidad 3'} value={"2.31"} /></Grid>
-      <Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicator 4'} subtitle={'Unidad 4'} value={"3.21"} /></Grid>
+      <Grid size={{ xs: 3, xl: 12 }}><IndicatorWeather title={'Indicador 1'} subtitle={'Unidad 1'} value={'1.23'} /></Grid>
+      <Grid size={{ xs: 3, xl: 12 }}><IndicatorWeather title={'Indicador 2'} subtitle={'Unidad 2'} value={'3.12'} /></Grid>
+      <Grid size={{ xs: 3, xl: 12 }}><IndicatorWeather title={'Indicator 3'} subtitle={'Unidad 3'} value={"2.31"} /></Grid>
+      <Grid size={{ xs: 3, xl: 12 }}><IndicatorWeather title={'Indicator 4'} subtitle={'Unidad 4'} value={"3.21"} /></Grid>
 
       {/* Tabla */}
-      <Grid size={{ xs: 12, xl: 8 }}>
+      <Grid size={{ xs: 8, xl: 5 }}>
         {/* Grid Anidado */}
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, xl: 3 }}>
@@ -34,7 +34,7 @@ function App() {
       </Grid>
 
       {/* Gráfico */}
-      <Grid size={{ xs: 12, xl: 4 }}>
+      <Grid size={{ xs: 4, xl: 12 }}>
       <LineChartWeather/>
       </Grid>
 
