@@ -1,38 +1,73 @@
+import { useState, useEffect } from 'react';
+
 import Paper from '@mui/material/Paper';
- import { LineChart } from '@mui/x-charts/LineChart';
+import { LineChart } from '@mui/x-charts/LineChart';
 
- const uData = [4000, 3000, 2000, 2780, 1890, 2390, 3490];
- const pData = [2400, 1398, 9800, 3908, 4800, 3800, 4300];
- const xLabels = [
-     'Page A',
-     'Page B',
-     'Page C',
-     'Page D',
-     'Page E',
-     'Page F',
-     'Page G',
- ];
 
- export default function LineChartWeather() {
-     return (
-         <Paper
-             sx={{
-                 p: 2,
-                 display: 'flex',
-                 flexDirection: 'column'
-             }}
-         >
+interface WeatherData {
+    temperatureData: number[];
+    humidityData: number[];
+    timeLabels: string[];
+}
 
-             {/* Componente para un gráfico de líneas */}
-             <LineChart
-                 width={400}
-                 height={250}
-                 series={[
-                     { data: pData, label: 'pv' },
-                     { data: uData, label: 'uv' },
-                 ]}
-                 xAxis={[{ scaleType: 'point', data: xLabels }]}
-             />
-         </Paper>
-     );
- }
+export default function LineChartWeather() {
+    const [weatherData, setWeatherData] = useState<WeatherData>({
+        temperatureData: [],
+        humidityData: [],
+        timeLabels: []
+    });
+
+    useEffect(() => {
+        let request = async () => {
+            let API_KEY = "f51d9809326a75824f6f3149fedae141"
+            let response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=Guayaquil&mode=xml&appid=${API_KEY}`)
+            let savedTextXML = await response.text();
+
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(savedTextXML, "application/xml");
+
+            let timeLabels: string[] = [];
+            let temperatureData: number[] = [];
+            let humidityData: number[] = [];
+
+            const forecastItems = xmlDoc.getElementsByTagName("time");
+
+            for (let i = 0; i < forecastItems.length; i++) {
+                const timeItem = forecastItems[i];
+                const time = timeItem.getAttribute("from");
+                if (time) timeLabels.push(time);
+
+                const temperature = timeItem.getElementsByTagName("temperature")[0]?.getAttribute("value");
+                if (temperature) temperatureData.push(parseFloat(temperature) - 273.15);
+
+                const humidity = timeItem.getElementsByTagName("humidity")[0]?.getAttribute("value");
+                if (humidity) humidityData.push(parseFloat(humidity));
+            }
+
+            setWeatherData({ timeLabels, temperatureData, humidityData });
+        }
+        request();
+    }, [])
+
+    return (
+        <Paper
+            sx={{
+                p: 2,
+                display: 'flex',
+                flexDirection: 'column'
+            }}
+        >
+
+            {/* Componente para un gráfico de líneas */}
+            <LineChart
+                width={900}
+                height={500}
+                series={[
+                    { data: weatherData.temperatureData, label: 'Temperatura (°C)' },
+                    { data: weatherData.humidityData, label: 'Humedad (%)' },
+                ]}
+                xAxis={[{ scaleType: 'point', data: weatherData.timeLabels }]}
+            />
+        </Paper>
+    );
+}
