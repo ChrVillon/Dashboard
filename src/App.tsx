@@ -7,6 +7,7 @@ import IndicatorWeather from './components/IndicatorWeather'
 import TableWeather from './components/TableWeather';
 import ControlWeather from './components/ControlWeather';
 import LineChartWeather from './components/LineChartWeather';
+import Item from './interface/Item';
 
 interface Indicator {
   title?: String;
@@ -19,6 +20,8 @@ function App() {
   {/* Variable de estado y función de actualización */ }
   let [indicators, setIndicators] = useState<Indicator[]>([])
   const [avgWindSpeed, setAvgWindSpeed] = useState<number>(0);
+
+  let [item, setItems] = useState<Item[]>([])
 
   {/* Hook: useEffect */ }
   useEffect(() => {
@@ -36,6 +39,8 @@ function App() {
       {/* Arreglo para agregar los resultados */ }
 
       let dataToIndicators: Indicator[] = new Array<Indicator>();
+
+      let dataToItem: Item[] = new Array<Item>();
 
       {/* 
                  Análisis, extracción y almacenamiento del contenido del XML 
@@ -56,9 +61,26 @@ function App() {
       let altitude = location.getAttribute("altitude") || ""
       dataToIndicators.push({ "title": "Location", "subtitle": "Altitude", "value": altitude })
 
+
+      let time = xml.getElementsByTagName("time")[1]
+      let from = time.getAttribute("from") || ""
+      let to = time.getAttribute("to") || ""
+
+      let precipitation = xml.getElementsByTagName("precipitation")[1]
+      let probability = precipitation.getAttribute("probability") || ""
+      
+      let humidity = xml.getElementsByTagName("humidity")[1]
+      let value = humidity.getAttribute("value") || ""
+
+      let clouds = xml.getElementsByTagName("clouds")[1]
+      let all = clouds.getAttribute("all") || ""
+
+      dataToItem.push({"dateStart": from, "dateEnd": to, "precipitation": probability, "humidity": value, "clouds": all})
+
       //console.log(dataToIndicators)
       {/* Modificación de la variable de estado mediante la función de actualización */ }
       setIndicators(dataToIndicators)
+      setItems(dataToItem)
     }
 
     request();
@@ -87,32 +109,26 @@ function App() {
       {/*<Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicador 1'} subtitle={'Unidad 1'} value={'1.23'} /></Grid>
       <Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicador 2'} subtitle={'Unidad 2'} value={'3.12'} /></Grid>
       <Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicator 3'} subtitle={'Unidad 3'} value={"2.31"} /></Grid>
-      <Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicator 4'} subtitle={'Unidad 4'} value={"3.21"} /></Grid>*/}
+      <Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicator 4'} subtitle={'Unidad 4'} value={"3.21"} /></Grid>
+      </Grid>*/}
 
       {renderIndicators()}
 
       {/* Tabla */}
-      <Grid size={{ xs: 12, sm: 12 }}>
+      <Grid size={{ xs: 12, sm: 8 }}>
         {/* Grid Anidado */}
         <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 3 }}>
+          <Grid size={{ xs: 12, sm: 9 }}>
             <ControlWeather />
-            <Grid size={{ xs: 12, sm: 12 }} sx={{mt: 10}}>
-            <IndicatorWeather
-            title='Velocidad promedio del viento'
-            value={`${avgWindSpeed.toFixed(2)} km/h`}
-             subtitle='Promedio de las últimas mediciones'
-          />
           </Grid>
-          </Grid>
-          <Grid size={{ xs: 9, xl: 9 }}>
-            <TableWeather setAvgWindSpeed={setAvgWindSpeed} />
+          <Grid size={{ xs: 9, sm: 12 }}>
+            <TableWeather itemsIn={item}/>
           </Grid>
         </Grid>
       </Grid>
 
       {/* Gráfico */}
-      <Grid size={{ xs: 12, sm: 9 }}>
+      <Grid size={{ xs: 12, sm: 4 }}>
         <LineChartWeather />
       </Grid>
     </Grid>
