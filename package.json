@@ -2,7 +2,7 @@
   "name": "vite-project",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://chrvillon.github.io/dashboard",
+  "homepage": "https://chrvillon.github.io/Dashboard",
   "type": "module",
   "scripts": {
     "predeploy": "npm run build",

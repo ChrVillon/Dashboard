@@ -19,73 +19,102 @@ function App() {
   //const [count, setCount] = useState(0)
   {/* Variable de estado y función de actualización */ }
   let [indicators, setIndicators] = useState<Indicator[]>([])
+  let [owm, setOWM] = useState(localStorage.getItem("openWeatherMap"))
 
   let [item, setItems] = useState<Item[]>([])
 
   {/* Hook: useEffect */ }
   useEffect(() => {
     let request = async () => {
+      {/* Referencia a las claves del LocalStorage: openWeatherMap y expiringTime */ }
+      let savedTextXML = localStorage.getItem("openWeatherMap") || "";
+      let expiringTime = localStorage.getItem("expiringTime");
 
-      {/* Request */ }
-      let API_KEY = "f51d9809326a75824f6f3149fedae141"
-      let response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=Guayaquil&mode=xml&appid=${API_KEY}`)
-      let savedTextXML = await response.text();
+      {/* Obtenga la estampa de tiempo actual */ }
+      let nowTime = (new Date()).getTime();
 
-      {/* XML Parser */ }
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(savedTextXML, "application/xml");
+      if (expiringTime === null || nowTime > parseInt(expiringTime)) {
+        {/* Request */ }
+        let API_KEY = "f51d9809326a75824f6f3149fedae141"
+        let response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=Guayaquil&mode=xml&appid=${API_KEY}`)
+        let savedTextXML = await response.text();
 
-      {/* Arreglo para agregar los resultados */ }
+        {/* Tiempo de expiración */ }
+        let hours = 0.01
+        let delay = hours * 3600000
+        let expiringTime = nowTime + delay
 
-      let dataToIndicators: Indicator[] = new Array<Indicator>();
 
-      let dataToItem: Item[] = new Array<Item>();
+        {/* En el LocalStorage, almacene el texto en la clave openWeatherMap, estampa actual y estampa de tiempo de expiración */ }
+        localStorage.setItem("openWeatherMap", savedTextXML)
+        localStorage.setItem("expiringTime", expiringTime.toString())
+        localStorage.setItem("nowTime", nowTime.toString())
 
-      {/* 
+        {/* DateTime */ }
+        localStorage.setItem("expiringDateTime", new Date(expiringTime).toString())
+        localStorage.setItem("nowDateTime", new Date(nowTime).toString())
+
+        {/* Modificación de la variable de estado mediante la función de actualización */ }
+        setOWM(savedTextXML)
+      }
+
+      if (savedTextXML) {
+        {/* XML Parser */ }
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(savedTextXML, "application/xml");
+
+        {/* Arreglo para agregar los resultados */ }
+
+        let dataToIndicators: Indicator[] = new Array<Indicator>();
+
+        let dataToItem: Item[] = new Array<Item>();
+
+        {/* 
                  Análisis, extracción y almacenamiento del contenido del XML 
                  en el arreglo de resultados
              */}
 
-      let name = xml.getElementsByTagName("name")[0].innerHTML || ""
-      dataToIndicators.push({ "title": "Location", "subtitle": "City", "value": name })
+        let name = xml.getElementsByTagName("name")[0].innerHTML || ""
+        dataToIndicators.push({ "title": "Location", "subtitle": "City", "value": name })
 
-      let location = xml.getElementsByTagName("location")[1]
+        let location = xml.getElementsByTagName("location")[1]
 
-      let latitude = location.getAttribute("latitude") || ""
-      dataToIndicators.push({ "title": "Location", "subtitle": "Latitude", "value": latitude })
+        let latitude = location.getAttribute("latitude") || ""
+        dataToIndicators.push({ "title": "Location", "subtitle": "Latitude", "value": latitude })
 
-      let longitude = location.getAttribute("longitude") || ""
-      dataToIndicators.push({ "title": "Location", "subtitle": "Longitude", "value": longitude })
+        let longitude = location.getAttribute("longitude") || ""
+        dataToIndicators.push({ "title": "Location", "subtitle": "Longitude", "value": longitude })
 
-      let altitude = location.getAttribute("altitude") || ""
-      dataToIndicators.push({ "title": "Location", "subtitle": "Altitude", "value": altitude })
+        let altitude = location.getAttribute("altitude") || ""
+        dataToIndicators.push({ "title": "Location", "subtitle": "Altitude", "value": altitude })
 
 
-      let times = xml.getElementsByTagName("time")
-      for (let i = 0; i < times.length; i++) {
-        let time = times[i]
-        let from = time.getAttribute("from") || ""
-        let to = time.getAttribute("to") || ""
+        let times = xml.getElementsByTagName("time")
+        for (let i = 0; i < times.length; i++) {
+          let time = times[i]
+          let from = time.getAttribute("from") || ""
+          let to = time.getAttribute("to") || ""
 
-        let precipitation = time.getElementsByTagName("precipitation")[0]
-        let probability = precipitation.getAttribute("probability") || ""
+          let precipitation = time.getElementsByTagName("precipitation")[0]
+          let probability = precipitation.getAttribute("probability") || ""
 
-        let humidity = time.getElementsByTagName("humidity")[0]
-        let value = humidity.getAttribute("value") || ""
+          let humidity = time.getElementsByTagName("humidity")[0]
+          let value = humidity.getAttribute("value") || ""
 
-        let clouds = time.getElementsByTagName("clouds")[0]
-        let all = clouds.getAttribute("all") || ""
+          let clouds = time.getElementsByTagName("clouds")[0]
+          let all = clouds.getAttribute("all") || ""
 
-        dataToItem.push({ "dateStart": from, "dateEnd": to, "precipitation": probability, "humidity": value, "clouds": all })
+          dataToItem.push({ "dateStart": from, "dateEnd": to, "precipitation": probability, "humidity": value, "clouds": all })
+        }
+        //console.log(dataToIndicators)
+        {/* Modificación de la variable de estado mediante la función de actualización */ }
+        setIndicators(dataToIndicators)
+        setItems(dataToItem.slice(0, 5))
       }
-      //console.log(dataToIndicators)
-      {/* Modificación de la variable de estado mediante la función de actualización */ }
-      setIndicators(dataToIndicators)
-      setItems(dataToItem.slice(0, 5))
     }
 
     request();
-  }, [])
+  }, [owm])
 
   let renderIndicators = () => {
 
