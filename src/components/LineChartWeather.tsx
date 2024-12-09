@@ -60,8 +60,8 @@ export default function LineChartWeather() {
 
             {/* Componente para un gráfico de líneas */}
             <LineChart
-                width={900}
-                height={500}
+                width={400}
+                height={250}
                 series={[
                     { data: weatherData.temperatureData, label: 'Temperatura (°C)' },
                     { data: weatherData.humidityData, label: 'Humedad (%)' },

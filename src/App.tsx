@@ -19,7 +19,6 @@ function App() {
   //const [count, setCount] = useState(0)
   {/* Variable de estado y función de actualización */ }
   let [indicators, setIndicators] = useState<Indicator[]>([])
-  const [avgWindSpeed, setAvgWindSpeed] = useState<number>(0);
 
   let [item, setItems] = useState<Item[]>([])
 
@@ -62,25 +61,27 @@ function App() {
       dataToIndicators.push({ "title": "Location", "subtitle": "Altitude", "value": altitude })
 
 
-      let time = xml.getElementsByTagName("time")[1]
-      let from = time.getAttribute("from") || ""
-      let to = time.getAttribute("to") || ""
+      let times = xml.getElementsByTagName("time")
+      for (let i = 0; i < times.length; i++) {
+        let time = times[i]
+        let from = time.getAttribute("from") || ""
+        let to = time.getAttribute("to") || ""
 
-      let precipitation = xml.getElementsByTagName("precipitation")[1]
-      let probability = precipitation.getAttribute("probability") || ""
-      
-      let humidity = xml.getElementsByTagName("humidity")[1]
-      let value = humidity.getAttribute("value") || ""
+        let precipitation = time.getElementsByTagName("precipitation")[0]
+        let probability = precipitation.getAttribute("probability") || ""
 
-      let clouds = xml.getElementsByTagName("clouds")[1]
-      let all = clouds.getAttribute("all") || ""
+        let humidity = time.getElementsByTagName("humidity")[0]
+        let value = humidity.getAttribute("value") || ""
 
-      dataToItem.push({"dateStart": from, "dateEnd": to, "precipitation": probability, "humidity": value, "clouds": all})
+        let clouds = time.getElementsByTagName("clouds")[0]
+        let all = clouds.getAttribute("all") || ""
 
+        dataToItem.push({ "dateStart": from, "dateEnd": to, "precipitation": probability, "humidity": value, "clouds": all })
+      }
       //console.log(dataToIndicators)
       {/* Modificación de la variable de estado mediante la función de actualización */ }
       setIndicators(dataToIndicators)
-      setItems(dataToItem)
+      setItems(dataToItem.slice(0, 5))
     }
 
     request();
@@ -122,7 +123,7 @@ function App() {
             <ControlWeather />
           </Grid>
           <Grid size={{ xs: 9, sm: 12 }}>
-            <TableWeather itemsIn={item}/>
+            <TableWeather itemsIn={item} />
           </Grid>
         </Grid>
       </Grid>

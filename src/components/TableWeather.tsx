@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -10,15 +10,6 @@ import Item from '../interface/Item';
 
 interface MyProp {
   itemsIn: Item[];
-}
-
-interface WeatherRow {
-  time: string;
-  condition: string;
-  windSpeed: string;
-  pressure: string;
-  visibility: string;
-  windSpeedValue: number; 
 }
 
 export default function BasicTable(props: MyProp) {
@@ -49,16 +40,16 @@ export default function BasicTable(props: MyProp) {
               <TableCell component="th" scope="row">
                 {row.dateStart}
               </TableCell>
-              <TableCell component="th" scope="row">
+              <TableCell align='right' component="th" scope="row">
                 {row.dateEnd}
               </TableCell>
-              <TableCell component="th" scope="row">
+              <TableCell align='right' component="th" scope="row">
                 {row.precipitation}
               </TableCell>
-              <TableCell component="th" scope="row">
+              <TableCell align='right' component="th" scope="row">
                 {row.humidity}
               </TableCell>
-              <TableCell component="th" scope="row">
+              <TableCell align='right' component="th" scope="row">
                 {row.clouds}
               </TableCell>
             </TableRow>
