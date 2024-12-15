@@ -9,6 +9,8 @@ import ControlWeather from './components/ControlWeather';
 import LineChartWeather from './components/LineChartWeather';
 import Item from './interface/Item';
 
+import Navbar from './components/NavBar';
+
 interface Indicator {
   title?: String;
   subtitle?: String;
@@ -23,21 +25,36 @@ function App() {
 
   let [item, setItems] = useState<Item[]>([])
 
+  let [temperature, setTemperarure] = useState<number[]>([])
+  let [humidity, setHumidity] = useState<number[]>([])
+  let [feelsLike, setFeelsLike] = useState<number[]>([])
+  let [timeLabels, setTimeLables] = useState<string[]>([])
+  let [selected, setSelected] = useState<number>(3);
+
+  const [city, setCity] = useState<string>('Guayaquil')
+
   {/* Hook: useEffect */ }
   useEffect(() => {
+    console.log("Ciudad actual:", city);
+    if (!city) return;
+
     let request = async () => {
       {/* Referencia a las claves del LocalStorage: openWeatherMap y expiringTime */ }
       let savedTextXML = localStorage.getItem("openWeatherMap") || "";
       let expiringTime = localStorage.getItem("expiringTime");
+      let savedCity = localStorage.getItem("city");
 
       {/* Obtenga la estampa de tiempo actual */ }
       let nowTime = (new Date()).getTime();
 
-      if (expiringTime === null || nowTime > parseInt(expiringTime)) {
+      if (expiringTime === null || nowTime > parseInt(expiringTime) || savedCity !== city) {
+        console.log("Llamando a la API...");
         {/* Request */ }
         let API_KEY = "f51d9809326a75824f6f3149fedae141"
-        let response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=Guayaquil&mode=xml&appid=${API_KEY}`)
+        let response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&mode=xml&appid=${API_KEY}`)
         let savedTextXML = await response.text();
+        console.log(savedTextXML);  // Verifica que los datos XML estén llegando correctamente
+
 
         {/* Tiempo de expiración */ }
         let hours = 0.01
@@ -69,6 +86,11 @@ function App() {
 
         let dataToItem: Item[] = new Array<Item>();
 
+        let dataTemperarure: number[] = new Array<number>();
+        let dataHumidity: number[] = new Array<number>();
+        let dataFeelsLike: number[] = new Array<number>();
+        let timeLabels: string[] = new Array<string>();
+
         {/* 
                  Análisis, extracción y almacenamiento del contenido del XML 
                  en el arreglo de resultados
@@ -96,7 +118,8 @@ function App() {
           let to = time.getAttribute("to") || ""
 
           let precipitation = time.getElementsByTagName("precipitation")[0]
-          let probability = precipitation.getAttribute("probability") || ""
+          let probability = parseFloat(precipitation.getAttribute("probability") || "")
+          let probabilityValue = (probability * 100).toFixed(0).toString()
 
           let humidity = time.getElementsByTagName("humidity")[0]
           let value = humidity.getAttribute("value") || ""
@@ -104,17 +127,37 @@ function App() {
           let clouds = time.getElementsByTagName("clouds")[0]
           let all = clouds.getAttribute("all") || ""
 
-          dataToItem.push({ "dateStart": from, "dateEnd": to, "precipitation": probability, "humidity": value, "clouds": all })
+          let windSpeed = time.getElementsByTagName("windSpeed")[0]
+          let windSpeedValue = windSpeed.getAttribute("mps") || ""
+
+          let temperature = time.getElementsByTagName("temperature")[0]
+          let temperatureValue = temperature.getAttribute("value") || ""
+
+          let feelsLike = time.getElementsByTagName("feels_like")[0]
+          let feelsLikeValue = feelsLike.getAttribute("value") || ""
+
+          dataToItem.push({ "dateStart": from, "dateEnd": to, "precipitation": probabilityValue, "windSpeed": windSpeedValue, "clouds": all })
+
+          timeLabels.push(from)
+          dataTemperarure.push(parseFloat(temperatureValue) - 273.15)
+          dataHumidity.push(parseFloat(value))
+          dataFeelsLike.push(parseFloat(feelsLikeValue) - 273.15)
+          
+
         }
         //console.log(dataToIndicators)
         {/* Modificación de la variable de estado mediante la función de actualización */ }
         setIndicators(dataToIndicators)
         setItems(dataToItem.slice(0, 5))
+        setTemperarure(dataTemperarure)
+        setHumidity(dataHumidity)
+        setFeelsLike(dataFeelsLike)
+        setTimeLables(timeLabels)
       }
     }
 
     request();
-  }, [owm])
+  }, [owm, city])
 
   let renderIndicators = () => {
 
@@ -133,36 +176,46 @@ function App() {
   }
 
   return (
-    <Grid container spacing={5}>
+    <div>
+      <Navbar onCitySearch={(city) => {
+    console.log("Ciudad seleccionada:", city);
+    setCity(city); // Actualiza la ciudad en el estado del padre
+}} />
+      <Grid container spacing={5}>
 
-      {/* Indicadores */}
-      {/*<Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicador 1'} subtitle={'Unidad 1'} value={'1.23'} /></Grid>
+        {/* Indicadores */}
+        {/*<Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicador 1'} subtitle={'Unidad 1'} value={'1.23'} /></Grid>
       <Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicador 2'} subtitle={'Unidad 2'} value={'3.12'} /></Grid>
       <Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicator 3'} subtitle={'Unidad 3'} value={"2.31"} /></Grid>
       <Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicator 4'} subtitle={'Unidad 4'} value={"3.21"} /></Grid>
       </Grid>*/}
 
-      {renderIndicators()}
+        {renderIndicators()}
 
-      {/* Tabla */}
-      <Grid size={{ xs: 12, sm: 8 }}>
-        {/* Grid Anidado */}
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 9 }}>
-            <ControlWeather />
-          </Grid>
-          <Grid size={{ xs: 9, sm: 12 }}>
-            <TableWeather itemsIn={item} />
+        {/* Tabla */}
+        <Grid size={{ xs: 12, sm: 8 }}>
+          {/* Grid Anidado */}
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 9 }}>
+              <ControlWeather setSelected={setSelected} />
+            </Grid>
+            <Grid size={{ xs: 9, sm: 12 }}>
+              <TableWeather itemsIn={item} />
+            </Grid>
           </Grid>
         </Grid>
-      </Grid>
 
-      {/* Gráfico */}
-      <Grid size={{ xs: 12, sm: 4 }}>
-        <LineChartWeather />
+        {/* Gráfico */}
+        <Grid size={{ xs: 12, sm: 4 }}>
+          <LineChartWeather
+            temperatureData={selected === 0 || selected === 3 ? temperature : []}
+            humidityData={selected === 1 || selected === 3 ? humidity : []}
+            feelsLikeData={selected === 2 || selected === 3 ? feelsLike : []}
+            timeLabels={timeLabels}
+            selected={selected} />
+        </Grid>
       </Grid>
-    </Grid>
-
+    </div>
   )
 }
 

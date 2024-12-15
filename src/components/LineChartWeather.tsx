@@ -6,48 +6,34 @@ import { LineChart } from '@mui/x-charts/LineChart';
 
 interface WeatherData {
     temperatureData: number[];
+    feelsLikeData: number[];
     humidityData: number[];
     timeLabels: string[];
+    selected: number;
 }
 
-export default function LineChartWeather() {
-    const [weatherData, setWeatherData] = useState<WeatherData>({
-        temperatureData: [],
-        humidityData: [],
-        timeLabels: []
-    });
+interface SeriesData {
+    data: number[];
+    label: string;
+}
 
-    useEffect(() => {
-        let request = async () => {
-            let API_KEY = "f51d9809326a75824f6f3149fedae141"
-            let response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=Guayaquil&mode=xml&appid=${API_KEY}`)
-            let savedTextXML = await response.text();
+export default function LineChartWeather({ temperatureData, humidityData, feelsLikeData, timeLabels, selected }: WeatherData) {
 
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(savedTextXML, "application/xml");
+    const defaultColors = [
+        '#FF5733', // Temperatura (rojo)
+        '#33B5FF', // Humedad (azul)
+        '#FFC300', // Sensación térmica (amarillo)
+    ];
 
-            let timeLabels: string[] = [];
-            let temperatureData: number[] = [];
-            let humidityData: number[] = [];
+    const series = [
+        { data: temperatureData, label: 'Temperatura (°C)', color: defaultColors[0] },
+        { data: humidityData, label: 'Humedad (%)', color: defaultColors[1] },
+        { data: feelsLikeData, label: 'Sensación térmica (°C)', color: defaultColors[2] },
+    ];
 
-            const forecastItems = xmlDoc.getElementsByTagName("time");
-
-            for (let i = 0; i < forecastItems.length; i++) {
-                const timeItem = forecastItems[i];
-                const time = timeItem.getAttribute("from");
-                if (time) timeLabels.push(time);
-
-                const temperature = timeItem.getElementsByTagName("temperature")[0]?.getAttribute("value");
-                if (temperature) temperatureData.push(parseFloat(temperature) - 273.15);
-
-                const humidity = timeItem.getElementsByTagName("humidity")[0]?.getAttribute("value");
-                if (humidity) humidityData.push(parseFloat(humidity));
-            }
-
-            setWeatherData({ timeLabels, temperatureData, humidityData });
-        }
-        request();
-    }, [])
+    const filteredSeries = selected === 3
+        ? series // Mostrar todas las series
+        : series.filter((_, index) => index === selected);
 
     return (
         <Paper
@@ -62,11 +48,8 @@ export default function LineChartWeather() {
             <LineChart
                 width={400}
                 height={250}
-                series={[
-                    { data: weatherData.temperatureData, label: 'Temperatura (°C)' },
-                    { data: weatherData.humidityData, label: 'Humedad (%)' },
-                ]}
-                xAxis={[{ scaleType: 'point', data: weatherData.timeLabels }]}
+                series={filteredSeries}
+                xAxis={[{ scaleType: 'point', data: timeLabels }]}
             />
         </Paper>
     );

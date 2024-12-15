@@ -27,7 +27,7 @@ export default function BasicTable(props: MyProp) {
             <TableCell>Hora de inicio</TableCell>
             <TableCell align="right">Hora de fin</TableCell>
             <TableCell align="right">Precipitación</TableCell>
-            <TableCell align="right">Humedad</TableCell>
+            <TableCell align="right">Velocidad del viento</TableCell>
             <TableCell align="right">Nubosidad</TableCell>
           </TableRow>
         </TableHead>
@@ -47,7 +47,7 @@ export default function BasicTable(props: MyProp) {
                 {row.precipitation}
               </TableCell>
               <TableCell align='right' component="th" scope="row">
-                {row.humidity}
+                {row.windSpeed}
               </TableCell>
               <TableCell align='right' component="th" scope="row">
                 {row.clouds}

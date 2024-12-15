@@ -13,21 +13,24 @@ import FormControl from '@mui/material/FormControl';
 {/* Interfaz SelectChangeEvent */ }
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 
+interface ControlWeatherProps {
+    setSelected: (selected: number) => void;
+}
 
-export default function ControlWeather() {
+
+export default function ControlWeather({setSelected}: ControlWeatherProps) {
 
     {/* Constante de referencia a un elemento HTML */ }
     const descriptionRef = useRef<HTMLDivElement>(null);
-
-    {/* Variable de estado y función de actualización */ }
-    let [_, setSelected] = useState(-1) 
+ 
     {/**setSelect es una funcion que cambia el estado (solo esa funcion puede cambiar el estado) */}
 
     {/* Arreglo de objetos */ }
     let items = [
-        { "name": "Precipitación", "description": "Cantidad de agua que cae sobre una superficie en un período específico." },
+        { "name": "Temperatura", "description": "Nivel de temperatura en el ambiente expresadda en grados Celsius." },
         { "name": "Humedad", "description": "Cantidad de vapor de agua presente en el aire, generalmente expresada como un porcentaje." },
-        { "name": "Nubosidad", "description": "Grado de cobertura del cielo por nubes, afectando la visibilidad y la cantidad de luz solar recibida." }
+        { "name": "Sensacion térmica", "description": "Nivel de como percibimos la temperatura considerando otros factores, expresado en grados Celsius." },
+        { "name": "Todas las variables", "description": "Muestra todos los datos de temperatura, humedad y precipitación." }
     ]
 
     {/* Arreglo de elementos JSX */ }
