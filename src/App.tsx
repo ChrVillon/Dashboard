@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react'
 import Grid from '@mui/material/Grid2'
-//import reactLogo from './assets/react.svg'
-//import viteLogo from '/vite.svg'
 import './App.css'
 import IndicatorWeather from './components/IndicatorWeather'
 import TableWeather from './components/TableWeather';
 import ControlWeather from './components/ControlWeather';
 import LineChartWeather from './components/LineChartWeather';
 import Item from './interface/Item';
-
 import Navbar from './components/NavBar';
+import IconWeather from './components/IconWeather';
+import { Paper } from '@mui/material';
 
 interface Indicator {
   title?: String;
@@ -18,100 +17,93 @@ interface Indicator {
 }
 
 function App() {
-  //const [count, setCount] = useState(0)
-  {/* Variable de estado y función de actualización */ }
-  let [indicators, setIndicators] = useState<Indicator[]>([])
-  let [owm, setOWM] = useState(localStorage.getItem("openWeatherMap"))
+  let [indicators, setIndicators] = useState<Indicator[]>([]);
+  let [item, setItems] = useState<Item[]>([]);
 
-  let [item, setItems] = useState<Item[]>([])
-
-  let [temperature, setTemperarure] = useState<number[]>([])
-  let [humidity, setHumidity] = useState<number[]>([])
-  let [feelsLike, setFeelsLike] = useState<number[]>([])
-  let [timeLabels, setTimeLables] = useState<string[]>([])
+  let [temperature, setTemperature] = useState<number[]>([]);
+  let [humidity, setHumidity] = useState<number[]>([]);
+  let [feelsLike, setFeelsLike] = useState<number[]>([]);
+  let [timeLabels, setTimeLabels] = useState<string[]>([]);
   let [selected, setSelected] = useState<number>(3);
 
-  const [city, setCity] = useState<string>('Guayaquil')
+  let [currentTemperature, setCurrentTemperature] = useState<number>();
+  let [currentHumidity, setCurrentHumidity] = useState<number>();
+  let [currentFeelsLike, setCurrentFeelsLike] = useState<number>();
+  let [currentVisibility, setCurrentVisibility] = useState<number>();
+  let [currentWind, setCurrentWind] = useState<number>();
+  let [lastUpdate, setLastUpdate] = useState<string>();
 
-  {/* Hook: useEffect */ }
-  useEffect(() => {
-    console.log("Ciudad actual:", city);
-    if (!city) return;
+  const [city, setCity] = useState<string>('Guayaquil');
 
-    let request = async () => {
-      {/* Referencia a las claves del LocalStorage: openWeatherMap y expiringTime */ }
-      let savedTextXML = localStorage.getItem("openWeatherMap") || "";
-      let expiringTime = localStorage.getItem("expiringTime");
-      let savedCity = localStorage.getItem("city");
+  // Función reutilizable para manejar la API y el almacenamiento local
+  const fetchAndStoreData = async (url: string, key: string) => {
+    let nowTime = new Date().getTime();
+    let expiringTime = parseInt(localStorage.getItem(`${key}_expiringTime`) || '0');
+    const storedCity = localStorage.getItem("city");
 
-      {/* Obtenga la estampa de tiempo actual */ }
-      let nowTime = (new Date()).getTime();
+    if (storedCity?.toLowerCase() !== city.toLowerCase()) {
+      localStorage.removeItem(key);
+      localStorage.removeItem(`${key}_expiringTime`);
+      localStorage.removeItem("city");
+    }
 
-      if (expiringTime === null || nowTime > parseInt(expiringTime) || savedCity !== city) {
-        console.log("Llamando a la API...");
-        {/* Request */ }
-        let API_KEY = "f51d9809326a75824f6f3149fedae141"
-        let response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&mode=xml&appid=${API_KEY}`)
-        let savedTextXML = await response.text();
-        console.log(savedTextXML);  // Verifica que los datos XML estén llegando correctamente
+    if (nowTime > expiringTime || localStorage.getItem(city)?.toLowerCase() !== city.toLowerCase().trim()) {
+      try {
+        console.log(`Llamando a la API para: ${key}`);
+        const response = await fetch(url);
+        const data = await response.text();
 
+        let hours = 0.01; // Cambiar este valor según el TTL deseado
+        let delay = hours * 3600000;
 
-        {/* Tiempo de expiración */ }
-        let hours = 0.01
-        let delay = hours * 3600000
-        let expiringTime = nowTime + delay
+        localStorage.setItem(key, data);
+        localStorage.setItem(`${key}_expiringTime`, (nowTime + delay).toString());
+        localStorage.setItem("city", city.trim());
 
-
-        {/* En el LocalStorage, almacene el texto en la clave openWeatherMap, estampa actual y estampa de tiempo de expiración */ }
-        localStorage.setItem("openWeatherMap", savedTextXML)
-        localStorage.setItem("expiringTime", expiringTime.toString())
-        localStorage.setItem("nowTime", nowTime.toString())
-
-        {/* DateTime */ }
-        localStorage.setItem("expiringDateTime", new Date(expiringTime).toString())
-        localStorage.setItem("nowDateTime", new Date(nowTime).toString())
-
-        {/* Modificación de la variable de estado mediante la función de actualización */ }
-        setOWM(savedTextXML)
+        return data;
+      } catch (error) {
+        console.error(`Error al obtener datos para ${key}:`, error);
       }
+    } else {
+      return localStorage.getItem(key) || "";
+    }
+  };
 
-      if (savedTextXML) {
-        {/* XML Parser */ }
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(savedTextXML, "application/xml");
+  const parseXMLData = (xmlString: string) => {
+    const parser = new DOMParser();
+    return parser.parseFromString(xmlString, "application/xml");
+  };
 
-        {/* Arreglo para agregar los resultados */ }
+  useEffect(() => {
+    const fetchData = async () => {
+      const API_KEY = "f51d9809326a75824f6f3149fedae141";
+      const forecastURL = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&mode=xml&appid=${API_KEY}`;
+      const weatherURL = `https://api.openweathermap.org/data/2.5/weather?q=${city}&mode=xml&appid=${API_KEY}`;
 
-        let dataToIndicators: Indicator[] = new Array<Indicator>();
+      const forecastXML = await fetchAndStoreData(forecastURL, "forecast");
+      const weatherXML = await fetchAndStoreData(weatherURL, "weather");
 
-        let dataToItem: Item[] = new Array<Item>();
+      if (forecastXML) {
+        const xml = parseXMLData(forecastXML);
 
-        let dataTemperarure: number[] = new Array<number>();
-        let dataHumidity: number[] = new Array<number>();
-        let dataFeelsLike: number[] = new Array<number>();
-        let timeLabels: string[] = new Array<string>();
+        let dataToIndicators: Indicator[] = [];
+        let dataToItem: Item[] = [];
+        let dataTemperature: number[] = [];
+        let dataHumidity: number[] = [];
+        let dataFeelsLike: number[] = [];
+        let timeLabels: string[] = [];
 
-        {/* 
-                 Análisis, extracción y almacenamiento del contenido del XML 
-                 en el arreglo de resultados
-             */}
+        const name = xml.getElementsByTagName("name")[0]?.innerHTML || "";
+        dataToIndicators.push({ title: "Location", subtitle: "City", value: name });
 
-        let name = xml.getElementsByTagName("name")[0].innerHTML || ""
-        dataToIndicators.push({ "title": "Location", "subtitle": "City", "value": name })
+        const location = xml.getElementsByTagName("location")[1];
+        if (location) {
+          dataToIndicators.push({ title: "Location", subtitle: "Latitude", value: location.getAttribute("latitude") || "" });
+          dataToIndicators.push({ title: "Location", subtitle: "Longitude", value: location.getAttribute("longitude") || "" });
+          dataToIndicators.push({ title: "Location", subtitle: "Altitude", value: location.getAttribute("altitude") || "" });
+        }
 
-        let location = xml.getElementsByTagName("location")[1]
-
-        let latitude = location.getAttribute("latitude") || ""
-        dataToIndicators.push({ "title": "Location", "subtitle": "Latitude", "value": latitude })
-
-        let longitude = location.getAttribute("longitude") || ""
-        dataToIndicators.push({ "title": "Location", "subtitle": "Longitude", "value": longitude })
-
-        let altitude = location.getAttribute("altitude") || ""
-        dataToIndicators.push({ "title": "Location", "subtitle": "Altitude", "value": altitude })
-
-
-        let times = xml.getElementsByTagName("time")
+        const times = xml.getElementsByTagName("time");
         for (let i = 0; i < times.length; i++) {
           let time = times[i]
           let from = time.getAttribute("from") || ""
@@ -135,66 +127,79 @@ function App() {
 
           let feelsLike = time.getElementsByTagName("feels_like")[0]
           let feelsLikeValue = feelsLike.getAttribute("value") || ""
-
           dataToItem.push({ "dateStart": from, "dateEnd": to, "precipitation": probabilityValue, "windSpeed": windSpeedValue, "clouds": all })
 
           timeLabels.push(from)
-          dataTemperarure.push(parseFloat(temperatureValue) - 273.15)
+          dataTemperature.push(parseFloat(temperatureValue) - 273.15)
           dataHumidity.push(parseFloat(value))
           dataFeelsLike.push(parseFloat(feelsLikeValue) - 273.15)
-          
 
         }
-        //console.log(dataToIndicators)
-        {/* Modificación de la variable de estado mediante la función de actualización */ }
-        setIndicators(dataToIndicators)
-        setItems(dataToItem.slice(0, 5))
-        setTemperarure(dataTemperarure)
-        setHumidity(dataHumidity)
-        setFeelsLike(dataFeelsLike)
-        setTimeLables(timeLabels)
+
+        setIndicators(dataToIndicators);
+        setItems(dataToItem.slice(0, 5));
+        setTemperature(dataTemperature);
+        setHumidity(dataHumidity);
+        setFeelsLike(dataFeelsLike);
+        setTimeLabels(timeLabels);
       }
-    }
 
-    request();
-  }, [owm, city])
+      if (weatherXML) {
+        const xml = parseXMLData(weatherXML);
 
-  let renderIndicators = () => {
+        const temperature = parseFloat(xml.getElementsByTagName("temperature")[0]?.getAttribute("value") || "") - 273.15;
+        const humidity = parseFloat(xml.getElementsByTagName("humidity")[0]?.getAttribute("value") || "");
+        const wind = parseFloat(xml.getElementsByTagName("wind")[0]?.getElementsByTagName("speed")[0]?.getAttribute("value") || "");
+        const feelsLike = parseFloat(xml.getElementsByTagName("feels_like")[0]?.getAttribute("value") || "") - 273.15;
+        const visibility = parseFloat(xml.getElementsByTagName("visibility")[0]?.getAttribute("value") || "");
+        const lastUpdate = xml.getElementsByTagName("precipitation")[0]?.getAttribute("mode") || "";
 
-    return indicators
-      .map(
-        (indicator, idx) => (
-          <Grid key={idx} size={{ xs: 12, sm: 3 }}>
-            <IndicatorWeather
-              title={indicator["title"]}
-              subtitle={indicator["subtitle"]}
-              value={indicator["value"]} />
-          </Grid>
-        )
-      )
+        setCurrentTemperature(temperature);
+        setCurrentHumidity(humidity);
+        setCurrentVisibility(visibility);
+        setCurrentFeelsLike(feelsLike);
+        setCurrentWind(wind);
+        setLastUpdate(lastUpdate);
+      }
+    };
 
-  }
+    fetchData();
+  }, [city]);
+
+  const renderIndicators = () =>
+    indicators.map((indicator, idx) => (
+      <Grid key={idx} size={{ xs: 12, sm: 3 }}>
+        <IndicatorWeather
+          title={indicator.title}
+          subtitle={indicator.subtitle}
+          value={indicator.value}
+        />
+      </Grid>
+    ));
 
   return (
     <div>
-      <Navbar onCitySearch={(city) => {
-    console.log("Ciudad seleccionada:", city);
-    setCity(city); // Actualiza la ciudad en el estado del padre
-}} />
-      <Grid container spacing={5}>
-
-        {/* Indicadores */}
-        {/*<Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicador 1'} subtitle={'Unidad 1'} value={'1.23'} /></Grid>
-      <Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicador 2'} subtitle={'Unidad 2'} value={'3.12'} /></Grid>
-      <Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicator 3'} subtitle={'Unidad 3'} value={"2.31"} /></Grid>
-      <Grid size={{ xs: 12, xl: 3 }}><IndicatorWeather title={'Indicator 4'} subtitle={'Unidad 4'} value={"3.21"} /></Grid>
-      </Grid>*/}
-
+      <Navbar
+        onCitySearch={(city) => {
+          console.log("Ciudad seleccionada:", city);
+          setCity(city);
+        }}
+      />
+      <Grid container spacing={4} marginX={10}>
         {renderIndicators()}
-
-        {/* Tabla */}
+        <Grid sx={{ xs: 12 }} display='flex' justifyContent='center'>
+          <Paper elevation={3} sx={{ borderRadius: 2, alignItems: 'center', width: '100%', p: 2, display: 'flex', justifyContent: 'center', flexWrap: 'wrap'}}>
+        <Grid container spacing={3} direction="row" alignItems="strech" sx={{ p:4, width: '100%' }} justifyContent={'center'}>
+              <IconWeather title="Temperatura actual" value={`${currentTemperature?.toFixed(2)} °C`} />
+              <IconWeather title="Sensación térmica" value={`${currentFeelsLike?.toFixed(2)} °C`} />
+              <IconWeather title='Visibilidad' value={`${currentVisibility?.toFixed(2)} m`} />
+              <IconWeather title='Humedad' value={`${currentHumidity?.toFixed(2)}%`} />
+              <IconWeather title='Viento' value={`${currentWind?.toFixed(2)} m/s`} />
+              <IconWeather title='Lluvia' value={`${lastUpdate}`}/>
+              </Grid>
+          </Paper>
+        </Grid>
         <Grid size={{ xs: 12, sm: 8 }}>
-          {/* Grid Anidado */}
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 9 }}>
               <ControlWeather setSelected={setSelected} />
@@ -204,19 +209,18 @@ function App() {
             </Grid>
           </Grid>
         </Grid>
-
-        {/* Gráfico */}
         <Grid size={{ xs: 12, sm: 4 }}>
           <LineChartWeather
             temperatureData={selected === 0 || selected === 3 ? temperature : []}
             humidityData={selected === 1 || selected === 3 ? humidity : []}
             feelsLikeData={selected === 2 || selected === 3 ? feelsLike : []}
             timeLabels={timeLabels}
-            selected={selected} />
+            selected={selected}
+          />
         </Grid>
       </Grid>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
