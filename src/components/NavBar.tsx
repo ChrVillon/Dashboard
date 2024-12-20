@@ -1,6 +1,6 @@
 // src/components/Navbar.tsx
 import React, { useState } from 'react';
-import { Drawer, List, ListItemButton, ListItemText, AppBar, Toolbar, IconButton, Typography, Box, TextField, Menu, MenuItem, Button } from '@mui/material';
+import { Drawer, List, ListItemButton, ListItemText, AppBar, Toolbar, Typography, Box, TextField, Button, useMediaQuery } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';  // Ícono para el menú
 import SearchIcon from '@mui/icons-material/Search';  // Ícono para la búsqueda
 import { useTheme } from '@mui/material/styles';
@@ -11,10 +11,10 @@ interface NavbarProps {
 }
 
 const Navbar: React.FC<NavbarProps> = ({ onCitySearch }) => {
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [drawerOpen, setDrawerOpen] = useState(false);
     const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Detecta pantallas pequeñas
 
     const handleMenu = () => {
         setDrawerOpen(!drawerOpen);
@@ -73,6 +73,34 @@ const Navbar: React.FC<NavbarProps> = ({ onCitySearch }) => {
                         <MenuIcon />
                         Menú
                     </Button>
+                    {!isMobile ? (
+                        <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                            <form onSubmit={handleSearchSubmit} style={{ display: "flex" }}>
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Buscar ciudad"
+                                    style={{
+                                        padding: "8px",
+                                        borderRadius: "4px",
+                                        border: "1px solid #ccc",
+                                        marginRight: "8px",
+                                    }}
+                                />
+                                <Button type="submit" variant="contained" color="secondary">
+                                    Buscar
+                                </Button>
+                            </form>
+                            <Button color="inherit" onClick={handleMenu}>
+                                Menú
+                            </Button>
+                        </Box>
+                    ) : (
+                        <Button color="inherit" onClick={handleMenu}>
+                            <MenuIcon />
+                        </Button>
+                    )}
                 </Toolbar>
             </AppBar>
             <Drawer
@@ -94,7 +122,7 @@ const Navbar: React.FC<NavbarProps> = ({ onCitySearch }) => {
                     </ListItemButton>
                     <ListItemButton component="a" href="#tabla" onClick={handleMenu}>
                         <ListItemText primary="Historial climático" />
-                    </ListItemButton>                    
+                    </ListItemButton>
                 </List>
             </Drawer>
         </div>

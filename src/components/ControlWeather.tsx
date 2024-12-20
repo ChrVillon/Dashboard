@@ -1,5 +1,5 @@
 {/* Hooks */ }
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 
 {/* Componentes MUI */ }
 import Paper from '@mui/material/Paper';

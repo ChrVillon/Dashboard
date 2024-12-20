@@ -1,5 +1,3 @@
-import { useState, useEffect } from 'react';
-
 import Paper from '@mui/material/Paper';
 import { LineChart } from '@mui/x-charts/LineChart';
 
@@ -10,11 +8,6 @@ interface WeatherData {
     humidityData: number[];
     timeLabels: string[];
     selected: number;
-}
-
-interface SeriesData {
-    data: number[];
-    label: string;
 }
 
 export default function LineChartWeather({ temperatureData, humidityData, feelsLikeData, timeLabels, selected }: WeatherData) {
