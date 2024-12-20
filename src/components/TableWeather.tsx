@@ -20,7 +20,7 @@ export default function BasicTable(props: MyProp) {
   }, [props])
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer sx={{width: '100%'}} component={Paper}>
       <Table aria-label="weather table">
         <TableHead>
           <TableRow>

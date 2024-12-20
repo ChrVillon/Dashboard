@@ -1,6 +1,6 @@
 // src/components/Navbar.tsx
 import React, { useState } from 'react';
-import { Drawer, List, ListItemButton, ListItemText, AppBar, Toolbar, Typography, Box, TextField, Button, useMediaQuery, IconButton, Grid2 } from '@mui/material';
+import { Drawer, List, ListItemButton, ListItemText, AppBar, Toolbar, Typography, Box, TextField, Button, useMediaQuery, IconButton} from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';  // Ícono para el menú
 import SearchIcon from '@mui/icons-material/Search';  // Ícono para la búsqueda
 import { useTheme } from '@mui/material/styles';
@@ -76,12 +76,10 @@ const Navbar: React.FC<NavbarProps> = ({ onCitySearch }) => {
                         <Box>
                             {/* Menú con texto */}
                             <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: '16px' }}>
-                                <IconButton color="inherit" onClick={toggleDrawer}>
+                                <Button color="inherit" onClick={toggleDrawer}>
                                     <MenuIcon />
-                                </IconButton>
-                                <Typography variant="body1" sx={{ marginLeft: '8px' }}>
                                     Menú
-                                </Typography>
+                                </Button>
                             </Box>
                         </Box>
                     ) : (

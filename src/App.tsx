@@ -188,7 +188,7 @@ function App() {
       <Typography id='infoGeo' component={'h2'} variant='h4' marginTop={12}>Informacion geográfica de {city.charAt(0).toUpperCase() + city.slice(1).toLowerCase()}</Typography>
       <Grid container spacing={4} marginTop={3} marginX={10} justifyContent={'center'}>
         {renderIndicators()}
-        <Grid id='clima' sx={{ xs: 12 }} display={'flex'} flexDirection={'column'} justifyContent='center'>
+        <Grid id='clima' sx={{ xs: 12 }} display={'flex'} flexDirection={'column'} justifyContent='center' width={'100%'}>
           <Typography component={'h2'} variant='h4' marginBottom={2}>Condiciones climáticas actuales</Typography>
           <Paper elevation={3} sx={{ borderRadius: 2, alignItems: 'center', width: '100%', display: 'flex', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Grid container spacing={4} direction="row" alignItems="strech" sx={{ p: 4, width: '100%' }} justifyContent={'center'}>
@@ -201,7 +201,7 @@ function App() {
             </Grid>
           </Paper>
         </Grid>
-        <Grid id='grafica' size={{ xs: 12, sm: 15 }}>
+        <Grid id='grafica' size={{ xs: 12, sm: 15 }} width={'100%'}>
           <Typography component={'h2'} variant='h4' mb={2}>Gráfica de variables en el tiempo</Typography>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 3 }} sx={{display: 'flex', flexDirection: 'column'}}>
@@ -218,7 +218,7 @@ function App() {
             </Grid>
           </Grid>
         </Grid>
-        <Grid id='tabla' marginBottom={2} size={{ xs: 12, sm: 12 }}>
+        <Grid id='tabla' marginBottom={2} size={{ xs: 12, sm: 12 }} width={'100%'}>
         <Typography component={'h2'} variant='h4' mb={2}>Historial climático</Typography>
           <TableWeather itemsIn={item} />
         </Grid>
