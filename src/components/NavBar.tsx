@@ -1,6 +1,6 @@
 // src/components/Navbar.tsx
 import React, { useState } from 'react';
-import { Drawer, List, ListItemButton, ListItemText, AppBar, Toolbar, Typography, Box, TextField, Button, useMediaQuery } from '@mui/material';
+import { Drawer, List, ListItemButton, ListItemText, AppBar, Toolbar, Typography, Box, TextField, Button, useMediaQuery, IconButton, Grid2 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';  // Ícono para el menú
 import SearchIcon from '@mui/icons-material/Search';  // Ícono para la búsqueda
 import { useTheme } from '@mui/material/styles';
@@ -21,8 +21,8 @@ const Navbar: React.FC<NavbarProps> = ({ onCitySearch }) => {
     };
 
     // Manejar el cambio en la barra de búsqueda
-    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(event.target.value);
+    const toggleDrawer = () => {
+        setDrawerOpen(!drawerOpen);
     };
 
     const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -37,72 +37,62 @@ const Navbar: React.FC<NavbarProps> = ({ onCitySearch }) => {
         <div>
             <AppBar position="fixed">
                 <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    {/* Ícono y nombre de la página */}
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <img src={ClimaIcon} alt="Clima Icono" style={{ width: '2rem', height: 'auto', marginRight: '8px' }} />
-                        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                    {/* Ícono y Nombre */}
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <img
+                            src={ClimaIcon} // Asegúrate de reemplazar esta ruta con la correcta
+                            alt="Clima Icono"
+                            style={{ width: "2rem", height: "auto", marginRight: "8px" }}
+                        />
+                        <Typography variant="h6" noWrap>
                             Mi Aplicación de Clima
                         </Typography>
                     </Box>
+                    {/* Barra de búsqueda */}
                     <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center' }}>
-                        {/* Barra de búsqueda */}
                         <TextField
                             variant="outlined"
                             size="small"
                             value={searchQuery}
-                            onChange={handleSearchChange}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Ingrese una Ciudad"
                             sx={{
                                 backgroundColor: theme.palette.background.paper,
-                                borderRadius: '4px',
-                                marginRight: '16px',
-                                width: '500px',
+                                borderRadius: "4px",
+                                marginRight: "16px",
+                                width: "500px",
                             }}
                             InputProps={{
-                                startAdornment: <SearchIcon sx={{ marginRight: '8px' }} />,
+                                startAdornment: <SearchIcon sx={{ marginRight: "8px" }} />,
                             }}
-
                         />
                         <Button type="submit" variant="contained" color="secondary">
                             Buscar
                         </Button>
                     </form>
 
-                    {/* Menú */}
-                    <Button color="inherit" onClick={handleMenu}>
-                        <MenuIcon />
-                        Menú
-                    </Button>
+                    {/* Barra de búsqueda y Menú */}
                     {!isMobile ? (
-                        <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                            <form onSubmit={handleSearchSubmit} style={{ display: "flex" }}>
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Buscar ciudad"
-                                    style={{
-                                        padding: "8px",
-                                        borderRadius: "4px",
-                                        border: "1px solid #ccc",
-                                        marginRight: "8px",
-                                    }}
-                                />
-                                <Button type="submit" variant="contained" color="secondary">
-                                    Buscar
-                                </Button>
-                            </form>
-                            <Button color="inherit" onClick={handleMenu}>
-                                Menú
-                            </Button>
+                        <Box>
+                            {/* Menú con texto */}
+                            <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: '16px' }}>
+                                <IconButton color="inherit" onClick={toggleDrawer}>
+                                    <MenuIcon />
+                                </IconButton>
+                                <Typography variant="body1" sx={{ marginLeft: '8px' }}>
+                                    Menú
+                                </Typography>
+                            </Box>
                         </Box>
                     ) : (
-                        <Button color="inherit" onClick={handleMenu}>
+                        <IconButton color="inherit" onClick={toggleDrawer}>
                             <MenuIcon />
-                        </Button>
+                        </IconButton>
+
                     )}
                 </Toolbar>
             </AppBar>
+
             <Drawer
                 anchor="left"
                 open={drawerOpen}
