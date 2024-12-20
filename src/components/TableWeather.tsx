@@ -44,13 +44,13 @@ export default function BasicTable(props: MyProp) {
                 {row.dateEnd}
               </TableCell>
               <TableCell align='right' component="th" scope="row">
-                {row.precipitation}
+                {`${row.precipitation}%`}
               </TableCell>
               <TableCell align='right' component="th" scope="row">
-                {row.windSpeed}
+                {`${row.windSpeed} m/s`}
               </TableCell>
               <TableCell align='right' component="th" scope="row">
-                {row.clouds}
+                {`${row.clouds}%`}
               </TableCell>
             </TableRow>
           ))}

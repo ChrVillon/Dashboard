@@ -1,6 +1,6 @@
 // src/components/Navbar.tsx
 import React, { useState } from 'react';
-import { AppBar, Toolbar, IconButton, Typography, Box, TextField, Menu, MenuItem, Button } from '@mui/material';
+import { Drawer, List, ListItemButton, ListItemText, AppBar, Toolbar, IconButton, Typography, Box, TextField, Menu, MenuItem, Button } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';  // Ícono para el menú
 import SearchIcon from '@mui/icons-material/Search';  // Ícono para la búsqueda
 import { useTheme } from '@mui/material/styles';
@@ -13,15 +13,11 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ onCitySearch }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [drawerOpen, setDrawerOpen] = useState(false);
     const theme = useTheme();
 
-    // Manejar la apertura y cierre del menú
-    const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleMenuClose = () => {
-        setAnchorEl(null);
+    const handleMenu = () => {
+        setDrawerOpen(!drawerOpen);
     };
 
     // Manejar el cambio en la barra de búsqueda
@@ -34,58 +30,74 @@ const Navbar: React.FC<NavbarProps> = ({ onCitySearch }) => {
         if (searchQuery.trim()) {
             console.log("Ciudad antes de enviar:", searchQuery);
             onCitySearch(searchQuery.trim()); // Pasar la ciudad al componente padre
+            setSearchQuery('');
         }
     };
     return (
-        <AppBar position="sticky" sx={{ marginBottom: '20px' }}>
-            <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                {/* Ícono y nombre de la página */}
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <img src={ClimaIcon} alt="Clima Icono" style={{ width: '2rem', height: 'auto', marginRight: '8px' }} />
-                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        Mi Aplicación de Clima
-                    </Typography>
-                </Box>
-                <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center' }}>
-                    {/* Barra de búsqueda */}
-                    <TextField
-                        variant="outlined"
-                        size="small"
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                        placeholder="Ingrese una Ciudad"
-                        sx={{
-                            backgroundColor: theme.palette.background.paper,
-                            borderRadius: '4px',
-                            marginRight: '16px',
-                            width: '500px',
-                        }}
-                        InputProps={{
-                            startAdornment: <SearchIcon sx={{ marginRight: '8px' }} />,
-                        }}
+        <div>
+            <AppBar position="fixed">
+                <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    {/* Ícono y nombre de la página */}
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <img src={ClimaIcon} alt="Clima Icono" style={{ width: '2rem', height: 'auto', marginRight: '8px' }} />
+                        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                            Mi Aplicación de Clima
+                        </Typography>
+                    </Box>
+                    <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center' }}>
+                        {/* Barra de búsqueda */}
+                        <TextField
+                            variant="outlined"
+                            size="small"
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                            placeholder="Ingrese una Ciudad"
+                            sx={{
+                                backgroundColor: theme.palette.background.paper,
+                                borderRadius: '4px',
+                                marginRight: '16px',
+                                width: '500px',
+                            }}
+                            InputProps={{
+                                startAdornment: <SearchIcon sx={{ marginRight: '8px' }} />,
+                            }}
 
-                    />
-                    <Button type="submit" variant="contained" color="primary">
-                        Buscar
+                        />
+                        <Button type="submit" variant="contained" color="secondary">
+                            Buscar
+                        </Button>
+                    </form>
+
+                    {/* Menú */}
+                    <Button color="inherit" onClick={handleMenu}>
+                        <MenuIcon />
+                        Menú
                     </Button>
-                </form>
-
-                {/* Menú */}
-                <Button color="inherit" onClick={handleMenuOpen}>
-                    <MenuIcon />
-                    Menú
-                </Button>
-                <Menu
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl)}
-                    onClose={handleMenuClose}
-                >
-                    <MenuItem onClick={handleMenuClose}>Opción 1</MenuItem>
-                    <MenuItem onClick={handleMenuClose}>Opción 2</MenuItem>
-                    <MenuItem onClick={handleMenuClose}>Opción 3</MenuItem>
-                </Menu>
-            </Toolbar>
-        </AppBar>
+                </Toolbar>
+            </AppBar>
+            <Drawer
+                anchor="left"
+                open={drawerOpen}
+                onClose={handleMenu}
+                PaperProps={{ style: { width: '250px' } }}
+            >
+                <List>
+                    {/* Opciones del Drawer */}
+                    <ListItemButton component="a" href="#infoGeo" onClick={handleMenu}>
+                        <ListItemText primary="Información Geográfica" />
+                    </ListItemButton>
+                    <ListItemButton component="a" href="#clima" onClick={handleMenu}>
+                        <ListItemText primary="Condición climática actual" />
+                    </ListItemButton>
+                    <ListItemButton component="a" href="#grafica" onClick={handleMenu}>
+                        <ListItemText primary="Variables en el tiempo" />
+                    </ListItemButton>
+                    <ListItemButton component="a" href="#tabla" onClick={handleMenu}>
+                        <ListItemText primary="Historial climático" />
+                    </ListItemButton>                    
+                </List>
+            </Drawer>
+        </div>
     );
 };
 

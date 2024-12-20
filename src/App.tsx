@@ -8,7 +8,7 @@ import LineChartWeather from './components/LineChartWeather';
 import Item from './interface/Item';
 import Navbar from './components/NavBar';
 import IconWeather from './components/IconWeather';
-import { Paper } from '@mui/material';
+import { Paper, Typography } from '@mui/material';
 
 interface Indicator {
   title?: String;
@@ -185,38 +185,42 @@ function App() {
           setCity(city);
         }}
       />
-      <Grid container spacing={4} marginX={10}>
+      <Typography id='infoGeo' component={'h2'} variant='h4' marginTop={12}>Informacion geográfica de {city.charAt(0).toUpperCase() + city.slice(1).toLowerCase()}</Typography>
+      <Grid container spacing={4} marginTop={3} marginX={10} justifyContent={'center'}>
         {renderIndicators()}
-        <Grid sx={{ xs: 12 }} display='flex' justifyContent='center'>
-          <Paper elevation={3} sx={{ borderRadius: 2, alignItems: 'center', width: '100%', p: 2, display: 'flex', justifyContent: 'center', flexWrap: 'wrap'}}>
-        <Grid container spacing={3} direction="row" alignItems="strech" sx={{ p:4, width: '100%' }} justifyContent={'center'}>
+        <Grid id='clima' sx={{ xs: 12 }} display={'flex'} flexDirection={'column'} justifyContent='center'>
+          <Typography component={'h2'} variant='h4' marginBottom={2}>Condiciones climáticas actuales</Typography>
+          <Paper elevation={3} sx={{ borderRadius: 2, alignItems: 'center', width: '100%', display: 'flex', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Grid container spacing={4} direction="row" alignItems="strech" sx={{ p: 4, width: '100%' }} justifyContent={'center'}>
               <IconWeather title="Temperatura actual" value={`${currentTemperature?.toFixed(2)} °C`} />
               <IconWeather title="Sensación térmica" value={`${currentFeelsLike?.toFixed(2)} °C`} />
               <IconWeather title='Visibilidad' value={`${currentVisibility?.toFixed(2)} m`} />
               <IconWeather title='Humedad' value={`${currentHumidity?.toFixed(2)}%`} />
               <IconWeather title='Viento' value={`${currentWind?.toFixed(2)} m/s`} />
-              <IconWeather title='Lluvia' value={`${lastUpdate}`}/>
-              </Grid>
+              <IconWeather title='Lluvia' value={`${lastUpdate}`} />
+            </Grid>
           </Paper>
         </Grid>
-        <Grid size={{ xs: 12, sm: 8 }}>
+        <Grid id='grafica' size={{ xs: 12, sm: 15 }}>
+          <Typography component={'h2'} variant='h4' mb={2}>Gráfica de variables en el tiempo</Typography>
           <Grid container spacing={2}>
-            <Grid size={{ xs: 12, sm: 9 }}>
+            <Grid size={{ xs: 12, sm: 3 }} sx={{display: 'flex', flexDirection: 'column'}}>
               <ControlWeather setSelected={setSelected} />
             </Grid>
-            <Grid size={{ xs: 9, sm: 12 }}>
-              <TableWeather itemsIn={item} />
+            <Grid size={{ xs: 12, sm: 9 }}>
+              <LineChartWeather
+                temperatureData={selected === 0 || selected === 3 ? temperature : []}
+                humidityData={selected === 1 || selected === 3 ? humidity : []}
+                feelsLikeData={selected === 2 || selected === 3 ? feelsLike : []}
+                timeLabels={timeLabels}
+                selected={selected}
+              />
             </Grid>
           </Grid>
         </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <LineChartWeather
-            temperatureData={selected === 0 || selected === 3 ? temperature : []}
-            humidityData={selected === 1 || selected === 3 ? humidity : []}
-            feelsLikeData={selected === 2 || selected === 3 ? feelsLike : []}
-            timeLabels={timeLabels}
-            selected={selected}
-          />
+        <Grid id='tabla' marginBottom={2} size={{ xs: 12, sm: 12 }}>
+        <Typography component={'h2'} variant='h4' mb={2}>Historial climático</Typography>
+          <TableWeather itemsIn={item} />
         </Grid>
       </Grid>
     </div>

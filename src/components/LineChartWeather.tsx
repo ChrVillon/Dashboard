@@ -46,8 +46,8 @@ export default function LineChartWeather({ temperatureData, humidityData, feelsL
 
             {/* Componente para un gráfico de líneas */}
             <LineChart
-                width={400}
-                height={250}
+                width={900}
+                height={350}
                 series={filteredSeries}
                 xAxis={[{ scaleType: 'point', data: timeLabels }]}
             />
